@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Karşılama Ekranı</title>
+  </head>
+  <body>
+    <main class="card">
+      <h1 class="title">Hoş geldin 👋</h1>
+      <p class="subtitle">
+        İsmini yaz, seni isminle karşılayalım ve anlık saat–gün bilgisini
+        gösterelim.
+      </p>
+
+      <!-- Giriş alanı -->
+      <div class="row" id="inputRow">
+        <input
+          id="nameInput"
+          type="text"
+          placeholder="İsmin nedir?"
+          aria-label="İsim"
+        />
+        <button id="startBtn">Başlat</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Karşılama ve saat/gün -->
+      <div id="welcome" class="hidden">
+        <div class="greeting" id="greetingText"></div>
+        <div class="clock" id="clockText"></div>
+      </div>
+    </main>
+
+    <script>
+      // Elemanlar
+      const nameInput = document.getElementById("nameInput");
+      const startBtn = document.getElementById("startBtn");
+      const inputRow = document.getElementById("inputRow");
+      const welcome = document.getElementById("welcome");
+      const greetingText = document.getElementById("greetingText");
+      const clockText = document.getElementById("clockText");
+      const timeFormatter = new Intl.DateTimeFormat("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      const dayFormatter = new Intl.DateTimeFormat("tr-TR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      let timerId = null;
+
+      function updateClock() {
+        const now = new Date();
+        const time = timeFormatter.format(now);
+        const day = dayFormatter.format(now);
+        clockText.textContent = `Şu an: ${time} • ${day}`;
+      }
+
+      function startGreeting() {
+        const rawName = nameInput.value.trim();
+        const name = rawName || "Misafir";
+
+        // Karşılama metni
+        greetingText.textContent = `Merhaba, ${name}!`;
+        inputRow.classList.add("hidden");
+        welcome.classList.remove("hidden");
+
+        // Saat/gün anında ve her saniye güncellensin
+        updateClock();
+        clearInterval(timerId);
+        timerId = setInterval(updateClock, 1000);
+        try {
+          localStorage.setItem("welcomeName", name);
+        } catch {}
+      }
+
+      // Buton tıklama
+      startBtn.addEventListener("click", startGreeting);
+
+      // Enter ile başlat
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") startGreeting();
+      });
+
+      // Sayfa açıldığında daha önce kaydedilmiş isim varsa otomatik karşılama
+      window.addEventListener("DOMContentLoaded", () => {
+        try {
+          const saved = localStorage.getItem("welcomeName");
+          if (saved) {
+            nameInput.value = saved;
+            startGreeting();
+          }
+        } catch {}
+      });
+    </script>
+  </body>
+</html>
